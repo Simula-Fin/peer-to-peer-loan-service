@@ -32,6 +32,7 @@ class Security(BaseModel):
     password_bcrypt_rounds: int = 12
     allowed_hosts: list[str] = ["localhost", "127.0.0.1"]
     backend_cors_origins: list[AnyHttpUrl] = []
+    microservice_p2p_url: SecretStr
 
 
 class Database(BaseModel):

@@ -13,4 +13,15 @@ class AccessTokenResponse(BaseResponse):
     expires_at: int
     refresh_token: str
     refresh_token_expires_at: int
-     
+
+class LoanResponse(BaseModel):
+    loan_id: int
+    borrower_id: int
+    amount: float
+    interest_rate: float
+    duration: int
+    status: str
+    goals: str
+    
+    class from_attributes:
+        orm_mode = True     

@@ -1,10 +1,8 @@
 from fastapi import APIRouter
 
 from app.api import api_messages
-from app.api.endpoints import auth, peer_to_peer
+from app.api.endpoints import loan
 
-auth_router = APIRouter()
-auth_router.include_router(auth.router, prefix="/auth", tags=["auth"])
 
 api_router = APIRouter(
     responses={
@@ -31,3 +29,5 @@ api_router = APIRouter(
         },
     }
 )
+
+api_router.include_router(loan.router, prefix="/p2p", tags=["p2p"])

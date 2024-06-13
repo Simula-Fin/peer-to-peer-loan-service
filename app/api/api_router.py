@@ -1,7 +1,7 @@
 from fastapi import APIRouter
 
 from app.api import api_messages
-from app.api.endpoints import loan
+from app.api.endpoints import loan, investment
 
 
 api_router = APIRouter(
@@ -30,4 +30,5 @@ api_router = APIRouter(
     }
 )
 
-api_router.include_router(loan.router, prefix="/p2p", tags=["p2p"])
+api_router.include_router(loan.router, tags=["emprestimos"])
+api_router.include_router(investment.router, tags=["investments"])

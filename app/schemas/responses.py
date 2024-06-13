@@ -24,4 +24,14 @@ class LoanResponse(BaseModel):
     goals: str
     
     class from_attributes:
-        orm_mode = True     
+        orm_mode = True
+
+
+class InvestmentResponse(BaseModel):
+    investment_id: int
+    loan_id: int
+    investor_id: int
+    amount: float
+
+    class from_attributes:
+        orm_mode = True

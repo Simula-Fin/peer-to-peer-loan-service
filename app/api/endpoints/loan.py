@@ -10,8 +10,6 @@ from app.schemas.requests import LoanRequest, LoanUpdateRequest
 from app.schemas.responses import LoanResponse
 
 from app.services.p2p import LoanCRUD
-import json
-
 
 router = APIRouter()
 
@@ -34,7 +32,8 @@ async def create_loan(
 
 @router.get("/loans", response_model=List[LoanResponse], description="List all loans", status_code=status.HTTP_200_OK)
 async def list_loans(
-    db: AsyncSession = Depends(get_session)
+    db: AsyncSession = Depends(get_session),
+    current_user: User = Depends(get_current_user),
 ) -> List[LoanResponse]:
     return await LoanCRUD.list_loans(db)
 
@@ -43,7 +42,8 @@ async def list_loans(
 async def update_loan(
     loan_id: int,
     loan_in: LoanUpdateRequest,
-    db: AsyncSession = Depends(get_session)
+    db: AsyncSession = Depends(get_session),
+    current_user: User = Depends(get_current_user),
 ) -> LoanResponse:
     return await LoanCRUD.update_loan(db, loan_id, loan_in)
 
@@ -51,7 +51,18 @@ async def update_loan(
 @router.delete("/loan/{loan_id}", description="Delete a loan", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_loan(
     loan_id: int,
-    db: AsyncSession = Depends(get_session)
+    db: AsyncSession = Depends(get_session),
+    current_user: User = Depends(get_current_user),
 ):
     await LoanCRUD.delete_loan(db, loan_id)
     return {"message": "Loan deleted successfully"}
+
+
+@router.get("/loans/{user_id}", response_model=List[LoanResponse], description="List loans of a specific user", status_code=status.HTTP_200_OK)
+async def list_user_loans(
+    user_id: int,
+    db: AsyncSession = Depends(get_session),
+    current_user: User = Depends(get_current_user),
+) -> List[LoanResponse]:
+    current_user_id = current_user["user_id"]
+    return await LoanCRUD.list_user_loans(db, current_user_id)

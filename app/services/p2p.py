@@ -120,4 +120,34 @@ class LoanCRUD:
         
         except Exception as e:
             await db.rollback()
-            raise HTTPException(status_code=500, detail="Error updating loan")    
+            raise HTTPException(status_code=500, detail="Error updating loan")
+
+    @staticmethod
+    async def list_user_loans(db: AsyncSession, user_id: int) -> List[LoanResponse]:
+        try:
+            
+            result = await db.execute(select(Borrower).where(Borrower.user_id == user_id))
+            borrower = result.scalar_one_or_none()
+
+            if not borrower:
+                raise HTTPException(status_code=404, detail="Borrower not found")
+
+            
+            result = await db.execute(select(Loan).where(Loan.borrower_id == borrower.borrower_id))
+            loans = result.scalars().all()
+
+            return [LoanResponse(
+                loan_id=loan.loan_id,
+                borrower_id=loan.borrower_id,
+                amount=loan.amount,
+                interest_rate=loan.interest_rate,
+                duration=loan.duration,
+                status=loan.status,
+                goals=loan.goals
+            ) for loan in loans]
+        
+        except HTTPException:
+            raise
+        
+        except Exception as e:
+            raise HTTPException(status_code=500, detail="Error retrieving user loans") 

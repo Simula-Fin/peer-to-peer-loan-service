@@ -31,7 +31,14 @@ class LoanUpdateRequest(BaseModel):
     goals: str
     
     class from_attributes:
-        orm_mode = True        
+        orm_mode = True    
+
+class InvestmentRequest(BaseModel):
+    loan_id: int
+    amount: float
+
+    class from_attributes:
+        orm_mode = True            
 
 
 

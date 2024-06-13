@@ -40,5 +40,6 @@ class InvestmentRequest(BaseModel):
     class from_attributes:
         orm_mode = True            
 
-
+class PaymentUpdateRequest(BaseModel):
+    status: str
 

@@ -35,3 +35,15 @@ class InvestmentResponse(BaseModel):
 
     class from_attributes:
         orm_mode = True
+
+class PaymentResponse(BaseModel):
+    payment_id: int
+    loan_id: int
+    borrower_id: int
+    installment_number: int
+    amount: float
+    due_date: date
+    status: str
+
+    class from_attributes:
+        orm_mode = True

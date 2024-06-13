@@ -1,7 +1,7 @@
 from fastapi import APIRouter
 
 from app.api import api_messages
-from app.api.endpoints import loan, investment
+from app.api.endpoints import loan, investment, payments
 
 
 api_router = APIRouter(
@@ -32,3 +32,4 @@ api_router = APIRouter(
 
 api_router.include_router(loan.router, tags=["emprestimos"])
 api_router.include_router(investment.router, tags=["investments"])
+api_router.include_router(payments.router, tags=["payments"])

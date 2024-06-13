@@ -9,7 +9,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from fastapi import HTTPException
 from app.models import Loan, Borrower, User
 from app.schemas.requests import LoanRequest, LoanUpdateRequest
-from app.schemas.responses import LoanResponse
+from app.schemas.responses import LoanResponse, LoanResponsePersonalizated, UserResponse
 from typing import List
 
 class LoanCRUD:
@@ -55,19 +55,32 @@ class LoanCRUD:
             raise HTTPException(status_code=400, detail="Error creating loan")
         
     @staticmethod
-    async def list_loans(db: AsyncSession) -> List[LoanResponse]:
+    async def list_loans(db: AsyncSession) -> List[LoanResponsePersonalizated]:
         try:
-            result = await db.execute(select(Loan))
-            loans = result.scalars().all()
-            return [LoanResponse(
-                loan_id=loan.loan_id,
-                borrower_id=loan.borrower_id,
-                amount=loan.amount,
-                interest_rate=loan.interest_rate,
-                duration=loan.duration,
-                status=loan.status,
-                goals=loan.goals
-            ) for loan in loans]
+            result = await db.execute(
+                select(Loan, Borrower, User)
+                .join(Borrower, Loan.borrower_id == Borrower.borrower_id)
+                .join(User, Borrower.user_id == User.user_id)
+            )
+            loans = result.all()
+
+            return [
+                LoanResponsePersonalizated(
+                    loan_id=loan.Loan.loan_id,
+                    borrower_id=loan.Loan.borrower_id,
+                    amount=loan.Loan.amount,
+                    interest_rate=loan.Loan.interest_rate,
+                    duration=loan.Loan.duration,
+                    status=loan.Loan.status,
+                    goals=loan.Loan.goals,
+                    user=UserResponse(
+                        user_id=loan.User.user_id,
+                        name=loan.User.name,
+                        email=loan.User.email
+                    )
+                )
+                for loan in loans
+            ]
         
         except Exception as e:
             print(e)

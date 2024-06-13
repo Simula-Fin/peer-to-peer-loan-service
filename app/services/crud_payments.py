@@ -8,7 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from sqlalchemy.exc import SQLAlchemyError
 from fastapi import HTTPException
-from app.models import User, Payment
+from app.models import User, Payment, Borrower
 from app.schemas.requests import PaymentUpdateRequest
 from app.schemas.responses import PaymentResponse
 from typing import List
@@ -19,14 +19,22 @@ class PaymentCRUD:
     @staticmethod
     async def get_user_payments(db: AsyncSession, user: User) -> List[PaymentResponse]:
         try:
-            payments = await db.execute(select(Payment).where(Payment.borrower_id == user["user_id"]))
+            payments = await db.execute(
+                select(Payment)
+                .join(Borrower, Payment.borrower_id == Borrower.borrower_id)
+                .where(Borrower.user_id == user["user_id"])
+            )
+            
             payments = payments.scalars().all()
+            
             return [PaymentResponse.from_orm(payment) for payment in payments]
-        
+            
         except SQLAlchemyError as e:
+            print(e)
             raise HTTPException(status_code=500, detail="Database error occurred")
         
         except Exception as e:
+            print(e)
             raise HTTPException(status_code=400, detail="Error fetching payments")
 
     @staticmethod

@@ -7,7 +7,7 @@ from app.api.deps import get_session, get_current_user
 from app.models import User
 
 from app.schemas.requests import LoanRequest, LoanUpdateRequest
-from app.schemas.responses import LoanResponse
+from app.schemas.responses import LoanResponse, LoanResponsePersonalizated
 
 from app.services.p2p import LoanCRUD
 
@@ -30,11 +30,11 @@ async def create_loan(
     return await LoanCRUD.create_loan(db, loan_in, current_user)
 
 
-@router.get("/loans", response_model=List[LoanResponse], description="List all loans", status_code=status.HTTP_200_OK)
+@router.get("/loans", response_model=List[LoanResponsePersonalizated], description="List all loans", status_code=status.HTTP_200_OK)
 async def list_loans(
     db: AsyncSession = Depends(get_session),
     current_user: User = Depends(get_current_user),
-) -> List[LoanResponse]:
+) -> List[LoanResponsePersonalizated]:
     return await LoanCRUD.list_loans(db)
 
 
@@ -58,9 +58,8 @@ async def delete_loan(
     return {"message": "Loan deleted successfully"}
 
 
-@router.get("/loans/{user_id}", response_model=List[LoanResponse], description="List loans of a specific user", status_code=status.HTTP_200_OK)
+@router.get("/loans/user", response_model=List[LoanResponse], description="List loans of a specific user", status_code=status.HTTP_200_OK)
 async def list_user_loans(
-    user_id: int,
     db: AsyncSession = Depends(get_session),
     current_user: User = Depends(get_current_user),
 ) -> List[LoanResponse]:

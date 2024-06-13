@@ -13,7 +13,7 @@ from app.services.crud_payments import PaymentCRUD
 
 router = APIRouter()
 
-@router.get("/payments", response_model=List[PaymentResponse], description="List all payments of the current user")
+@router.get("/payments/user", response_model=List[PaymentResponse], description="List all payments of the current user")
 async def list_user_payments(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_session)

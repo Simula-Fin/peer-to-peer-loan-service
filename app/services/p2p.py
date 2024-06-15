@@ -7,10 +7,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from sqlalchemy.exc import SQLAlchemyError
 from fastapi import HTTPException
-from app.models import Loan, Borrower, User
-from app.schemas.requests import LoanRequest, LoanUpdateRequest
+from app.models import Investment, Investor, Loan, Borrower, RiskProfile, User
+from app.schemas.requests import LoanRequest, LoanStatusEnum, LoanUpdateRequest
 from app.schemas.responses import LoanResponse, LoanResponsePersonalizated, UserResponse
 from typing import List
+
+from app.services.crud_investment import InvestmentCRUD
 
 class LoanCRUD:
     
@@ -53,14 +55,15 @@ class LoanCRUD:
         except Exception as e:
             print(e)
             raise HTTPException(status_code=400, detail="Error creating loan")
-        
-    @staticmethod
+
+    @staticmethod   
     async def list_loans(db: AsyncSession) -> List[LoanResponsePersonalizated]:
         try:
             result = await db.execute(
-                select(Loan, Borrower, User)
+                select(Loan, Borrower, User, RiskProfile)
                 .join(Borrower, Loan.borrower_id == Borrower.borrower_id)
                 .join(User, Borrower.user_id == User.user_id)
+                .join(RiskProfile, RiskProfile.borrower_id == Borrower.borrower_id)
             )
             loans = result.all()
 
@@ -73,6 +76,7 @@ class LoanCRUD:
                     duration=loan.Loan.duration,
                     status=loan.Loan.status,
                     goals=loan.Loan.goals,
+                    risk_score=loan.RiskProfile.risk_score,
                     user=UserResponse(
                         user_id=loan.User.user_id,
                         name=loan.User.name,
@@ -163,4 +167,50 @@ class LoanCRUD:
             raise
         
         except Exception as e:
-            raise HTTPException(status_code=500, detail="Error retrieving user loans") 
+            raise HTTPException(status_code=500, detail="Error retrieving user loans")
+
+    @staticmethod
+    async def update_loan_status(db: AsyncSession, loan_id: int, new_status: LoanStatusEnum) -> LoanResponse:
+        try:
+            # Buscar o empréstimo pelo ID
+            result = await db.execute(select(Loan).where(Loan.loan_id == loan_id))
+            loan = result.scalar_one_or_none()
+            
+            if not loan:
+                raise HTTPException(status_code=404, detail="Loan not found")
+            
+            # Atualizar o status do empréstimo
+            loan.status = new_status.value
+
+            # Commit para persistir a atualização do status
+            await db.commit()
+            await db.refresh(loan)
+
+            # Verificar se o novo status é 'payed' para gerar contrato e pagamentos
+            if new_status == LoanStatusEnum.payed:
+                # Buscar o investimento relacionado a este empréstimo
+                result_investment = await db.execute(select(Investment).where(Investment.loan_id == loan_id))
+                investment_in = result_investment.scalar_one_or_none()
+                if not investment_in:
+                    raise HTTPException(status_code=404, detail="Investment not found")
+
+                result_investor = await db.execute(select(Investor).where(Investor.investor_id == investment_in.investor_id))
+                investor = result_investor.scalar_one_or_none()
+                if not investor:
+                    raise HTTPException(status_code=404, detail="Investor not found")
+
+                # Gerar contrato
+                await InvestmentCRUD.generate_contract(db, loan, investor)
+
+                # Gerar pagamentos
+                await InvestmentCRUD.generate_payments(db, loan, investment_in.amount)
+
+            return LoanResponse.from_orm(loan)
+        
+        except SQLAlchemyError as e:
+            await db.rollback()
+            raise HTTPException(status_code=500, detail="Database error occurred")
+        
+        except Exception as e:
+            await db.rollback()
+            raise HTTPException(status_code=500, detail="Error updating loan status") 

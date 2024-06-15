@@ -32,3 +32,8 @@ async def get_current_user(
     except Exception as e:
         print(e)
         raise HTTPException(status_code=401, detail="Failed to verify token")
+
+async def admin_required(current_user = Depends(get_current_user)):
+    if not current_user["is_admin"]:
+        raise HTTPException(status_code=403, detail="Access forbidden: Admins only")
+    return current_user

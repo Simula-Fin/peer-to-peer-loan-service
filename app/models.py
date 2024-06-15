@@ -47,6 +47,7 @@ class User(Base):
     loan_simulations: Mapped[list["LoanSimulation"]] = relationship("LoanSimulation", back_populates="user")
     consortium_simulations: Mapped[list["ConsortiumSimulation"]] = relationship("ConsortiumSimulation", back_populates="user")
     financing_simulations: Mapped[list["FinancingSimulation"]] = relationship("FinancingSimulation", back_populates="user")
+    is_admin: Mapped[bool] = mapped_column(Boolean, nullable=True, default=False)
 
 class RefreshToken(Base):
     __tablename__ = "refresh_token"
@@ -138,6 +139,7 @@ class Payment(Base):
     status: Mapped[str] = mapped_column(String(50), nullable=False, default="pending")
     loan: Mapped[Loan] = relationship("Loan", back_populates="payments")
     borrower: Mapped[Borrower] = relationship("Borrower", back_populates="payments")
+    status_payment_investor: Mapped[str] = mapped_column(String(50), nullable=True, default="pending")
 
 class Bank(Base):
     __tablename__ = "bank"

@@ -3,10 +3,10 @@ from sqlalchemy import delete
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import List
 
-from app.api.deps import get_session, get_current_user
+from app.api.deps import admin_required, get_session, get_current_user
 from app.models import User
 
-from app.schemas.requests import LoanRequest, LoanUpdateRequest
+from app.schemas.requests import LoanRequest, LoanUpdateRequest, UpdateLoanStatusRequest
 from app.schemas.responses import LoanResponse, LoanResponsePersonalizated
 
 from app.services.p2p import LoanCRUD
@@ -65,3 +65,12 @@ async def list_user_loans(
 ) -> List[LoanResponse]:
     current_user_id = current_user["user_id"]
     return await LoanCRUD.list_user_loans(db, current_user_id)
+
+@router.put("/loans/status/{loan_id}", response_model=LoanResponse)
+async def update_loan_status(
+    loan_id: int,
+    request: UpdateLoanStatusRequest,
+    db: AsyncSession = Depends(get_session),
+    current_user: User = Depends(admin_required)
+):
+    return await LoanCRUD.update_loan_status(db, loan_id, request.status)

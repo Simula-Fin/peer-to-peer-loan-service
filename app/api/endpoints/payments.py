@@ -28,3 +28,12 @@ async def update_payment_status(
     db: AsyncSession = Depends(get_session)
 ):
     return await PaymentCRUD.update_payment_status(db, payment_id, payment_update.status)
+
+@router.patch("/payments/investor/{payment_id}", response_model=PaymentResponse, description="Update the status of a payment investor")
+async def update_payment_investor_status(
+    payment_id: int,
+    payment_update: PaymentUpdateRequest,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_session)
+):
+    return await PaymentCRUD.update_payment_investor_status(db, payment_id, payment_update.status)

@@ -20,8 +20,8 @@ class LoanRequest(BaseModel):
     duration: int
     goals: str
     
-    class from_attributes:
-        orm_mode = True
+    class Config:
+        from_attributes = True
 
 class LoanUpdateRequest(BaseModel):
     amount: float
@@ -30,16 +30,29 @@ class LoanUpdateRequest(BaseModel):
     status: str
     goals: str
     
-    class from_attributes:
-        orm_mode = True    
+    class Config:
+        from_attributes = True    
 
 class InvestmentRequest(BaseModel):
     loan_id: int
     amount: float
 
-    class from_attributes:
-        orm_mode = True            
+    class Config:
+        from_attributes = True            
 
 class PaymentUpdateRequest(BaseModel):
     status: str
+
+class LoanStatusEnum(str, Enum):
+    pending = "pending"
+    approved = "approved"
+    payed = "payed"
+    done = "done"
+
+# Schema para atualizar status do empréstimo
+class UpdateLoanStatusRequest(BaseModel):
+    status: LoanStatusEnum
+
+    class Config:
+        from_attributes = True
 

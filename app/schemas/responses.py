@@ -1,6 +1,6 @@
 from datetime import date, datetime
 from pydantic import BaseModel, ConfigDict, EmailStr, field_validator
-from typing import List
+from typing import List, Optional
 
 
 class BaseResponse(BaseModel):
@@ -23,8 +23,8 @@ class LoanResponse(BaseModel):
     status: str
     goals: str
     
-    class from_attributes:
-        orm_mode = True
+    class Config:
+        from_attributes = True
 
 
 class InvestmentResponse(BaseModel):
@@ -33,8 +33,8 @@ class InvestmentResponse(BaseModel):
     investor_id: int
     amount: float
 
-    class from_attributes:
-        orm_mode = True
+    class Config:
+        from_attributes = True
 
 class PaymentResponse(BaseModel):
     payment_id: int
@@ -66,6 +66,7 @@ class UserResponse(BaseModel):
     user_id: str
     name: str
     email: str
+    cpf: str
 
     class Config:
         from_attributes = True
@@ -79,6 +80,7 @@ class LoanResponsePersonalizated(BaseModel):
     status: str
     goals: str
     user: UserResponse
+    risk_score: Optional[int]
 
     class Config:
         from_attributes = True
@@ -92,4 +94,13 @@ class InvestmentResponsePersonalizated(BaseModel):
     loan: LoanResponse
 
     class Config:
-        from_attributes = True        
+        from_attributes = True
+
+class InvestmentResponseDetailed(BaseModel):
+    investment_id: int
+    amount: float
+    loan: LoanResponsePersonalizated
+    investor: UserResponse
+
+    class Config:
+        from_attributes = True

@@ -58,3 +58,25 @@ class PaymentCRUD:
         except Exception as e:
             await db.rollback()
             raise HTTPException(status_code=400, detail="Error updating payment status")
+
+    @staticmethod
+    async def update_payment_investor_status(db: AsyncSession, payment_id: int, status: str) -> PaymentResponse:
+        try:
+            payment = await db.scalar(select(Payment).where(Payment.payment_id == payment_id))
+            if not payment:
+                raise HTTPException(status_code=404, detail="Payment not found")
+
+            payment.status_payment_investor = status
+            db.add(payment)
+            await db.commit()
+            await db.refresh(payment)
+
+            return PaymentResponse.from_orm(payment)
+        
+        except SQLAlchemyError as e:
+            await db.rollback()
+            raise HTTPException(status_code=500, detail="Database error occurred")
+        
+        except Exception as e:
+            await db.rollback()
+            raise HTTPException(status_code=400, detail="Error updating payment investor status")

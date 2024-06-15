@@ -7,7 +7,7 @@ from app.api.deps import get_session, get_current_user
 from app.models import User
 
 from app.schemas.requests import InvestmentRequest
-from app.schemas.responses import InvestmentResponse, InvestmentResponsePersonalizated
+from app.schemas.responses import InvestmentResponse, InvestmentResponseDetailed, InvestmentResponsePersonalizated
 
 from app.services.crud_investment import InvestmentCRUD
 
@@ -22,11 +22,11 @@ async def create_investment(
     return await InvestmentCRUD.create_investment(db, investment_in, current_user)
 
 
-@router.get("/investments", response_model=List[InvestmentResponse], description="List all investments", status_code=status.HTTP_200_OK)
+@router.get("/investments", response_model=List[InvestmentResponseDetailed], description="List all investments", status_code=status.HTTP_200_OK)
 async def list_investments(
     db: AsyncSession = Depends(get_session),
     current_user: User = Depends(get_current_user),
-) -> List[InvestmentResponse]:
+) -> List[InvestmentResponseDetailed]:
     return await InvestmentCRUD.list_investments(db)
 
 

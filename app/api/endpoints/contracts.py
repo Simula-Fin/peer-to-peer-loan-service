@@ -3,7 +3,7 @@ from sqlalchemy import delete
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import List
 
-from app.api.deps import get_session, get_current_user
+from app.api.deps import get_session, get_current_user, admin_required
 from app.models import User
 from app.schemas.responses import ContractResponse
 
@@ -15,7 +15,7 @@ router = APIRouter()
 @router.get("/contracts", response_model=List[ContractResponse], description="List all contracts")
 async def list_all_contracts(
     db: AsyncSession = Depends(get_session),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(admin_required),
 ):
     return await ContractCRUD.get_all_contracts(db)
 

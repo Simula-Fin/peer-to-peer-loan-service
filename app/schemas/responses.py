@@ -49,19 +49,6 @@ class PaymentResponse(BaseModel):
         from_attributes = True
 
 
-class ContractResponse(BaseModel):
-    contract_id: int
-    loan_id: int
-    investor_id: int
-    borrower_id: int
-    status: str
-    date_signed: datetime
-    investor_signature_digital_uuid: str
-    borrower_signature_digital_uuid: str
-
-    class Config:
-        from_attributes = True
-
 class UserResponse(BaseModel):
     user_id: str
     name: str
@@ -104,3 +91,20 @@ class InvestmentResponseDetailed(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+class ContractResponse(BaseModel):
+    contract_id: int
+    loan_id: int
+    investor_id: int
+    borrower_id: int
+    status: str
+    date_signed: datetime
+    investor_signature_digital_uuid: str
+    borrower_signature_digital_uuid: str
+    loan: LoanResponsePersonalizated
+    borrower_user: UserResponse
+    investor_user: UserResponse
+
+    class Config:
+        from_attributes = True        

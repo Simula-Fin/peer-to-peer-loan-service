@@ -80,7 +80,8 @@ class LoanCRUD:
                     user=UserResponse(
                         user_id=loan.User.user_id,
                         name=loan.User.name,
-                        email=loan.User.email
+                        email=loan.User.email,
+                        cpf=loan.User.cpf,
                     )
                 )
                 for loan in loans

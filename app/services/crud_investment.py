@@ -40,6 +40,11 @@ class InvestmentCRUD:
             db.add(investment)
             await db.commit()
 
+            # atualizar o status do empréstimo
+            loan.status = "solicited"
+            db.add(loan)
+            await db.commit()
+
             # Retornar a resposta
             return InvestmentResponse(
                 investment_id=investment.investment_id,
@@ -199,4 +204,116 @@ class InvestmentCRUD:
             ]
         
         except Exception as e:
-            raise HTTPException(status_code=500, detail="Error retrieving user investments")       
+            raise HTTPException(status_code=500, detail="Error retrieving user investments")
+
+    @staticmethod
+    async def list_investments_payed(db: AsyncSession) -> List[InvestmentResponseDetailed]:
+        try:
+            borrower_user_alias = aliased(User)
+            investor_user_alias = aliased(User)
+            
+            result = await db.execute(
+                select(Investment, Loan, Borrower, borrower_user_alias, Investor, RiskProfile, investor_user_alias)
+                .join(Loan, Investment.loan_id == Loan.loan_id)
+                .join(Borrower, Loan.borrower_id == Borrower.borrower_id)
+                .join(borrower_user_alias, Borrower.user_id == borrower_user_alias.user_id)
+                .join(Investor, Investment.investor_id == Investor.investor_id)
+                .join(RiskProfile, Borrower.borrower_id == RiskProfile.borrower_id)
+                .join(investor_user_alias, Investor.user_id == investor_user_alias.user_id)
+                .where(Loan.status == "payed" and Loan.status_payment_investor == "pending")
+            )
+            investments = result.all()
+            
+            return [
+                InvestmentResponseDetailed(
+                    investment_id=investment[0].investment_id,
+                    amount=investment[0].amount,
+                    loan=LoanResponsePersonalizated(
+                        loan_id=investment[1].loan_id,
+                        borrower_id=investment[1].borrower_id,
+                        amount=investment[1].amount,
+                        interest_rate=investment[1].interest_rate,
+                        duration=investment[1].duration,
+                        status=investment[1].status,
+                        goals=investment[1].goals,
+                        risk_score=investment[5].risk_score,
+                        user=UserResponse(
+                            user_id=investment[3].user_id,
+                            name=investment[3].name,
+                            email=investment[3].email,
+                            cpf=investment[3].cpf
+                        )
+                    ),
+                    investor=UserResponse(
+                        user_id=investment[6].user_id,
+                        name=investment[6].name,
+                        email=investment[6].email,
+                        cpf=investment[6].cpf
+                    )
+                )
+                for investment in investments
+            ]
+        
+        except SQLAlchemyError as e:
+            print(e)
+            raise HTTPException(status_code=500, detail="Database error occurred")
+        
+        except Exception as e:
+            print(e)
+            raise HTTPException(status_code=500, detail="Error retrieving investments")
+        
+    @staticmethod
+    async def list_investment_status_approved(db: AsyncSession) -> List[InvestmentResponseDetailed]:
+        try:
+            borrower_user_alias = aliased(User)
+            investor_user_alias = aliased(User)
+            
+            result = await db.execute(
+                select(Investment, Loan, Borrower, borrower_user_alias, Investor, RiskProfile, investor_user_alias)
+                .join(Loan, Investment.loan_id == Loan.loan_id)
+                .join(Borrower, Loan.borrower_id == Borrower.borrower_id)
+                .join(borrower_user_alias, Borrower.user_id == borrower_user_alias.user_id)
+                .join(Investor, Investment.investor_id == Investor.investor_id)
+                .join(RiskProfile, Borrower.borrower_id == RiskProfile.borrower_id)
+                .join(investor_user_alias, Investor.user_id == investor_user_alias.user_id)
+                .where(Loan.status == "approved")
+            )
+            investments = result.all()
+            
+            return [
+                InvestmentResponseDetailed(
+                    investment_id=investment[0].investment_id,
+                    amount=investment[0].amount,
+                    loan=LoanResponsePersonalizated(
+                        loan_id=investment[1].loan_id,
+                        borrower_id=investment[1].borrower_id,
+                        amount=investment[1].amount,
+                        interest_rate=investment[1].interest_rate,
+                        duration=investment[1].duration,
+                        status=investment[1].status,
+                        goals=investment[1].goals,
+                        risk_score=investment[5].risk_score,
+                        user=UserResponse(
+                            user_id=investment[3].user_id,
+                            name=investment[3].name,
+                            email=investment[3].email,
+                            cpf=investment[3].cpf
+                        )
+                    ),
+                    investor=UserResponse(
+                        user_id=investment[6].user_id,
+                        name=investment[6].name,
+                        email=investment[6].email,
+                        cpf=investment[6].cpf
+                    )
+                )
+                for investment in investments
+            ]
+        
+        except SQLAlchemyError as e:
+            print(e)
+            raise HTTPException(status_code=500, detail="Database error occurred")
+        
+        except Exception as e:
+            print(e)
+            raise HTTPException(status_code=500, detail="Error retrieving investments")    

@@ -45,6 +45,7 @@ class PaymentUpdateRequest(BaseModel):
 
 class LoanStatusEnum(str, Enum):
     pending = "pending"
+    solicited = "solicited"
     approved = "approved"
     payed = "payed"
     done = "done"

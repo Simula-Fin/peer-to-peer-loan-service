@@ -3,7 +3,7 @@ from sqlalchemy import delete
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import List
 
-from app.api.deps import get_session, get_current_user
+from app.api.deps import admin_required, get_session, get_current_user
 from app.models import User
 
 from app.schemas.requests import InvestmentRequest
@@ -37,3 +37,18 @@ async def list_user_investments(
 ) -> List[InvestmentResponsePersonalizated]:
     current_user_id = current_user["user_id"]
     return await InvestmentCRUD.list_user_investments(db, current_user_id)
+
+@router.get("/investments/payed", response_model=List[InvestmentResponseDetailed], description="List all payed investments", status_code=status.HTTP_200_OK)
+async def list_investments_payed(
+    db: AsyncSession = Depends(get_session),
+    current_user: User = Depends(admin_required),
+) -> List[InvestmentResponseDetailed]:
+    return await InvestmentCRUD.list_investments_payed(db)
+
+
+@router.get("/investments/approved", response_model=List[InvestmentResponseDetailed], description="List all approved investments", status_code=status.HTTP_200_OK)
+async def list_investment_status_approved(
+    db: AsyncSession = Depends(get_session),
+    current_user: User = Depends(admin_required),
+) -> List[InvestmentResponseDetailed]:
+    return await InvestmentCRUD.list_investment_status_approved(db)

@@ -3,11 +3,11 @@ from sqlalchemy import delete
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import List
 
-from app.api.deps import get_session, get_current_user
+from app.api.deps import get_session, get_current_user, admin_required
 from app.models import User
 
 from app.schemas.requests import PaymentUpdateRequest
-from app.schemas.responses import PaymentResponse
+from app.schemas.responses import PaymentResponse, PaymentResponseDetailed
 
 from app.services.crud_payments import PaymentCRUD
 
@@ -44,3 +44,11 @@ async def update_payment_investor_status(
     db: AsyncSession = Depends(get_session)
 ):
     return await PaymentCRUD.update_payment_investor_status(db, payment_id, payment_update.status)
+
+
+@router.get("/payments/pending-payments", response_model=list[PaymentResponseDetailed])
+async def get_investor_pending_payments(
+    db: AsyncSession = Depends(get_session),
+    current_user: User = Depends(admin_required)
+):
+    return await PaymentCRUD.get_investor_pending_payments(db)

@@ -1,7 +1,7 @@
 import uuid
 from fastapi import HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import delete, select
+from sqlalchemy import delete, select, and_
 from sqlalchemy.orm import selectinload, joinedload
 
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -10,7 +10,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from fastapi import HTTPException
 from app.models import Investment, Investor, Loan, User, Payment, Borrower
 from app.schemas.requests import PaymentUpdateRequest
-from app.schemas.responses import PaymentResponse
+from app.schemas.responses import InvestmentResponse, LoanResponsePersonalizated, PaymentResponse, PaymentResponseDetailed, UserResponse
 from typing import List
 
 
@@ -158,3 +158,78 @@ class PaymentCRUD:
         except Exception as e:
             await db.rollback()
             raise HTTPException(status_code=400, detail="Error updating payment investor status")
+        
+    @staticmethod
+    async def get_investor_pending_payments(db: AsyncSession) -> list[PaymentResponseDetailed]:
+        try:
+            stmt = (
+                select(Payment, Loan, Investment, Investor, User)
+                .join(Loan, Payment.loan_id == Loan.loan_id)
+                .join(Borrower, Payment.borrower_id == Borrower.borrower_id)
+                .join(Investment, Loan.loan_id == Investment.loan_id)
+                .join(Investor, Investment.investor_id == Investor.investor_id)
+                .join(User, Investor.user_id == User.user_id)
+                .options(
+                    selectinload(Payment.loan)
+                    .selectinload(Loan.investments)
+                    .selectinload(Investment.investor)
+                    .selectinload(Investor.user)
+                )
+                .where(
+                    Payment.status == "payed",
+                    Payment.status_payment_investor == "pending"
+                )
+            )
+
+            result = await db.execute(stmt)
+            payments = result.all()
+
+            return [
+                PaymentResponseDetailed(
+                    payment_id=payment.Payment.payment_id,
+                    loan_id=payment.Payment.loan_id,
+                    borrower_id=payment.Payment.borrower_id,
+                    installment_number=payment.Payment.installment_number,
+                    amount=payment.Payment.amount,
+                    due_date=payment.Payment.due_date,
+                    status=payment.Payment.status,
+                    status_payment_investor=payment.Payment.status_payment_investor,
+                    loan=LoanResponsePersonalizated(
+                        loan_id=payment.Loan.loan_id,
+                        borrower_id=payment.Loan.borrower_id,
+                        amount=payment.Loan.amount,
+                        interest_rate=payment.Loan.interest_rate,
+                        duration=payment.Loan.duration,
+                        status=payment.Loan.status,
+                        goals=payment.Loan.goals,
+                        risk_score=30,
+                        user=UserResponse(
+                            user_id=payment.User.user_id,
+                            name=payment.User.name,
+                            email=payment.User.email,
+                            cpf=payment.User.cpf
+                        )
+                    ),
+                    investment=InvestmentResponse(
+                        investment_id=payment.Investment.investment_id,
+                        loan_id=payment.Investment.loan_id,
+                        amount=payment.Investment.amount,
+                        investor_id=payment.Investment.investor_id,
+                        investor=UserResponse(
+                            user_id=payment.Investor.user_id,
+                            name=payment.Investor.user.name,
+                            email=payment.Investor.user.email,
+                            cpf=payment.Investor.user.cpf
+                        )
+                    )
+                )
+                for payment in payments
+            ]
+
+        except SQLAlchemyError as e:
+            print(e)
+            raise HTTPException(status_code=500, detail="Database error occurred")
+
+        except Exception as e:
+            print(e)
+            raise HTTPException(status_code=400, detail="Error fetching investor pending payments")    

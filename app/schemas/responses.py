@@ -107,4 +107,20 @@ class ContractResponse(BaseModel):
     investor_user: UserResponse
 
     class Config:
-        from_attributes = True        
+        from_attributes = True
+
+
+class PaymentResponseDetailed(BaseModel):
+    payment_id: int
+    loan_id: int
+    borrower_id: int
+    installment_number: int
+    amount: float
+    due_date: datetime
+    status: str
+    status_payment_investor: str
+    loan: Optional[LoanResponsePersonalizated]
+    investment: Optional[InvestmentResponse]
+
+    class Config:
+        from_attributes = True

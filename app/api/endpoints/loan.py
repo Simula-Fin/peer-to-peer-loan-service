@@ -71,6 +71,6 @@ async def update_loan_status(
     loan_id: int,
     request: UpdateLoanStatusRequest,
     db: AsyncSession = Depends(get_session),
-    current_user: User = Depends(admin_required)
+    current_user: User = Depends(get_current_user)
 ):
     return await LoanCRUD.update_loan_status(db, loan_id, request.status)

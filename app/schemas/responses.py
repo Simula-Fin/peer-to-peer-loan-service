@@ -44,6 +44,7 @@ class PaymentResponse(BaseModel):
     amount: float
     due_date: datetime
     status: str
+    status_payment_investor: str
 
     class Config:
         from_attributes = True

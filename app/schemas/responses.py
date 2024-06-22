@@ -78,7 +78,10 @@ class InvestmentResponsePersonalizated(BaseModel):
     loan_id: int
     investor_id: int
     amount: float
+    risk_score: Optional[int]
     loan: LoanResponse
+    borrower_user: UserResponse
+    investor_user: UserResponse
 
     class Config:
         from_attributes = True

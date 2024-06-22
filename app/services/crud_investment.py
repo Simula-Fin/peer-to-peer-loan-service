@@ -2,7 +2,7 @@ import uuid
 from fastapi import HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import delete, select
-from sqlalchemy.orm import selectinload
+from sqlalchemy.orm import selectinload, joinedload
 
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
@@ -178,32 +178,54 @@ class InvestmentCRUD:
 
             # Consultar os investimentos do usuário com informações do empréstimo
             result = await db.execute(
-                select(Investment, Loan)
+                select(Investment, Loan, Borrower, User, RiskProfile)
                 .join(Loan, Investment.loan_id == Loan.loan_id)
+                .join(Borrower, Loan.borrower_id == Borrower.borrower_id)
+                .join(User, Borrower.user_id == User.user_id)
+                .join(RiskProfile, Borrower.borrower_id == RiskProfile.borrower_id)
+                .options(
+                    joinedload(Investment.loan),
+                    joinedload(Investment.investor).joinedload(Investor.user),
+                    joinedload(Loan.borrower).joinedload(Borrower.user)
+                )
                 .where(Investment.investor_id == investor.investor_id)
             )
             investments = result.all()
 
             return [
                 InvestmentResponsePersonalizated(
-                    investment_id=investment.Investment.investment_id,
-                    loan_id=investment.Investment.loan_id,
-                    investor_id=investment.Investment.investor_id,
-                    amount=investment.Investment.amount,
+                    investment_id=investment[0].investment_id,
+                    loan_id=investment[0].loan_id,
+                    investor_id=investment[0].investor_id,
+                    amount=investment[0].amount,
                     loan=LoanResponse(
-                        loan_id=investment.Loan.loan_id,
-                        borrower_id=investment.Loan.borrower_id,
-                        amount=investment.Loan.amount,
-                        interest_rate=investment.Loan.interest_rate,
-                        duration=investment.Loan.duration,
-                        status=investment.Loan.status,
-                        goals=investment.Loan.goals
+                        loan_id=investment[1].loan_id,
+                        borrower_id=investment[1].borrower_id,
+                        amount=investment[1].amount,
+                        interest_rate=investment[1].interest_rate,
+                        duration=investment[1].duration,
+                        status=investment[1].status,
+                        goals=investment[1].goals
+                    ),
+                    risk_score=investment[4].risk_score,
+                    borrower_user=UserResponse(
+                        user_id=investment[2].user_id,
+                        name=investment[2].user.name,
+                        email=investment[2].user.email,
+                        cpf=investment[2].user.cpf
+                    ),
+                    investor_user=UserResponse(
+                        user_id=investment[0].investor.user.user_id,
+                        name=investment[0].investor.user.name,
+                        email=investment[0].investor.user.email,
+                        cpf=investment[0].investor.user.cpf
                     )
                 )
                 for investment in investments
             ]
         
         except Exception as e:
+            print(e)
             raise HTTPException(status_code=500, detail="Error retrieving user investments")
 
     @staticmethod

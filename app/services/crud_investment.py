@@ -8,6 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from sqlalchemy.exc import SQLAlchemyError
 from fastapi import HTTPException
+from app.helpers.p2p_utils import ProfitCalculator
 from app.models import Loan, Borrower, RiskProfile, User, Investment, Investor, Payment, Contract
 from app.schemas.requests import InvestmentRequest
 from app.schemas.responses import InvestmentResponse, InvestmentResponsePersonalizated, LoanResponse, InvestmentResponseDetailed, LoanResponsePersonalizated, UserResponse
@@ -65,8 +66,9 @@ class InvestmentCRUD:
     @staticmethod
     async def generate_payments(db: AsyncSession, loan: Loan, investment_amount: float):
         try:
-            # Calcular o valor de cada parcela
-            monthly_payment = investment_amount / loan.duration
+            bank_profit, investor_profit, monthly_payment = ProfitCalculator.calculate_profits(
+                investment_amount, loan.interest_rate, loan.duration
+            )
 
             for i in range(loan.duration):
                 due_date = datetime.now() + timedelta(days=30 * (i + 1))
@@ -76,7 +78,9 @@ class InvestmentCRUD:
                     installment_number=i + 1,
                     amount=monthly_payment,
                     due_date=due_date,
-                    status="pending"
+                    status="pending",
+                    bank_profit=bank_profit / loan.duration,
+                    investor_profit=investor_profit / loan.duration
                 )
                 db.add(payment)
             

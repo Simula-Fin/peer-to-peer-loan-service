@@ -194,6 +194,7 @@ class PaymentCRUD:
                     due_date=payment.Payment.due_date,
                     status=payment.Payment.status,
                     status_payment_investor=payment.Payment.status_payment_investor,
+                    investor_profit=payment.Payment.investor_profit,
                     loan=LoanResponsePersonalizated(
                         loan_id=payment.Loan.loan_id,
                         borrower_id=payment.Loan.borrower_id,

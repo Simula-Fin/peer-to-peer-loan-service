@@ -13,6 +13,7 @@ from app.schemas.responses import LoanResponse, LoanResponsePersonalizated, User
 from typing import List
 
 from app.services.crud_investment import InvestmentCRUD
+from app.helpers.p2p_utils import ProfitCalculator
 
 class LoanCRUD:
     
@@ -23,15 +24,17 @@ class LoanCRUD:
             if not borrower:
                 raise HTTPException(status_code=404, detail="Borrower not found")
             
-            print(borrower)
-            
+            bank_profit, investor_profit, monthly_payment  = ProfitCalculator.calculate_profits(loan_in.amount, loan_in.interest_rate, loan_in.duration)
+
             loan = Loan(
                 borrower_id=borrower.borrower_id,
                 amount=loan_in.amount,
                 interest_rate=loan_in.interest_rate,
                 duration=loan_in.duration,
                 status="pending",
-                goals=loan_in.goals
+                goals=loan_in.goals,
+                bank_profit=bank_profit,
+                investor_profit=investor_profit
             )
             db.add(loan)
             await db.commit()

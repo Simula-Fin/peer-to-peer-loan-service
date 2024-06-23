@@ -22,6 +22,7 @@ class LoanResponse(BaseModel):
     duration: int
     status: str
     goals: str
+    investor_profit: Optional[float]
     
     class Config:
         from_attributes = True
@@ -45,6 +46,7 @@ class PaymentResponse(BaseModel):
     due_date: datetime
     status: str
     status_payment_investor: str
+    investor_profit: Optional[float]
 
     class Config:
         from_attributes = True
@@ -69,6 +71,7 @@ class LoanResponsePersonalizated(BaseModel):
     goals: str
     user: UserResponse
     risk_score: Optional[int]
+    investor_profit: Optional[float]
 
     class Config:
         from_attributes = True
@@ -123,6 +126,7 @@ class PaymentResponseDetailed(BaseModel):
     due_date: datetime
     status: str
     status_payment_investor: str
+    investor_profit: Optional[float]
     loan: Optional[LoanResponsePersonalizated]
     investment: Optional[InvestmentResponse]
 

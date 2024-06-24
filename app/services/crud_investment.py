@@ -210,7 +210,8 @@ class InvestmentCRUD:
                         interest_rate=investment[1].interest_rate,
                         duration=investment[1].duration,
                         status=investment[1].status,
-                        goals=investment[1].goals
+                        goals=investment[1].goals,
+                        investor_profit=investment[1].investor_profit,
                     ),
                     risk_score=investment[4].risk_score,
                     borrower_user=UserResponse(

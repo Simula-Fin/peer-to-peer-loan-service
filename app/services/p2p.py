@@ -47,7 +47,8 @@ class LoanCRUD:
                 interest_rate=loan.interest_rate,
                 duration=loan.duration,
                 status=loan.status,
-                goals=loan.goals
+                goals=loan.goals,
+                investor_profit=loan.investor_profit
             )
         
         except SQLAlchemyError as e:
@@ -137,7 +138,8 @@ class LoanCRUD:
                 interest_rate=loan.interest_rate,
                 duration=loan.duration,
                 status=loan.status,
-                goals=loan.goals
+                goals=loan.goals,
+                investor_profit=loan.investor_profit
             )
         
         except Exception as e:
@@ -165,7 +167,8 @@ class LoanCRUD:
                 interest_rate=loan.interest_rate,
                 duration=loan.duration,
                 status=loan.status,
-                goals=loan.goals
+                goals=loan.goals,
+                investor_profit=loan.investor_profit
             ) for loan in loans]
         
         except HTTPException:

@@ -204,6 +204,7 @@ class PaymentCRUD:
                         status=payment.Loan.status,
                         goals=payment.Loan.goals,
                         risk_score=30,
+                        investor_profit=payment.Loan.investor_profit,
                         user=UserResponse(
                             user_id=payment.User.user_id,
                             name=payment.User.name,

@@ -80,6 +80,7 @@ class LoanCRUD:
                     status=loan.Loan.status,
                     goals=loan.Loan.goals,
                     risk_score=loan.RiskProfile.risk_score,
+                    investor_profit=loan.Loan.investor_profit,
                     user=UserResponse(
                         user_id=loan.User.user_id,
                         name=loan.User.name,

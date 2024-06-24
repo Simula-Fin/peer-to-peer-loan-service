@@ -123,6 +123,7 @@ class InvestmentCRUD:
                         status=investment[1].status,
                         goals=investment[1].goals,
                         risk_score=investment[5].risk_score,
+                        investor_profit=investment[5].investor_profit,
                         user=UserResponse(
                             user_id=investment[3].user_id,
                             name=investment[3].name,
@@ -263,6 +264,7 @@ class InvestmentCRUD:
                         status=investment[1].status,
                         goals=investment[1].goals,
                         risk_score=investment[5].risk_score,
+                        investor_profit=investment[5].investor_profit,
                         user=UserResponse(
                             user_id=investment[3].user_id,
                             name=investment[3].name,
@@ -319,6 +321,7 @@ class InvestmentCRUD:
                         status=investment[1].status,
                         goals=investment[1].goals,
                         risk_score=investment[5].risk_score,
+                        investor_profit=investment[5].investor_profit,
                         user=UserResponse(
                             user_id=investment[3].user_id,
                             name=investment[3].name,

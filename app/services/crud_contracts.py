@@ -49,6 +49,7 @@ class ContractCRUD:
                         status=contract[1].status,
                         goals=contract[1].goals,
                         risk_score=30,
+                        investor_profit=contract[1].investor_profit,
                         user = UserResponse(
                             user_id=contract[3].user_id,
                             name=contract[3].name,
@@ -114,6 +115,7 @@ class ContractCRUD:
                         status=contract[1].status,
                         goals=contract[1].goals,
                         risk_score=30,
+                        investor_profit=contract[1].investor_profit,
                         user = UserResponse(
                             user_id=contract[3].user_id,
                             name=contract[3].name,

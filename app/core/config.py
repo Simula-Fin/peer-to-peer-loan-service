@@ -33,7 +33,7 @@ class Security(BaseModel):
     allowed_hosts: list[str] = ["localhost", "127.0.0.1"]
     backend_cors_origins: list[AnyHttpUrl] = []
     microservice_p2p_url: SecretStr
-
+    external_api_key: SecretStr
 
 class Database(BaseModel):
     hostname: str = "postgres"

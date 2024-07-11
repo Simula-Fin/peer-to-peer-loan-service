@@ -1,4 +1,4 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Request
 from app.schemas.requests import RSAEncryptRequest, RSADecryptRequest, ChatBotRequest
 import requests
 from fastapi import HTTPException
@@ -58,6 +58,18 @@ async def send_message_to_bot(request: ChatBotRequest):
         response.raise_for_status()  # Raise an exception for HTTP errors
     except requests.exceptions.RequestException as e:
         print (e)
+        raise HTTPException(status_code=500, detail=str(e))
+    
+    return {"status": "Request sent", "response": response.json()}
+
+@router.get("/stocks/stock-summary/{symbol}", description="Get stock data")
+async def get_stock_data(request: Request, symbol: str):
+    try:
+        url = f"https://stock-api-f7tht.ondigitalocean.app/api/stocks/stock-summary/{symbol}"
+        response = requests.get(url)
+        response.raise_for_status()  # Raise an exception for HTTP errors
+    except requests.exceptions.RequestException as e:
+        print(e)
         raise HTTPException(status_code=500, detail=str(e))
     
     return {"status": "Request sent", "response": response.json()}
